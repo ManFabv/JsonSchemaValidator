@@ -11,23 +11,49 @@ namespace JsonSchemaValidator.Test
     [TestFixture]
     class JSonSchemaValidatorTests
     {
+        private JSchema _schema;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _schema = JSchema.Parse(@"{  
+                           'Roles':[  
+                              {
+                                        'Administrator':[
+                                           {  
+                                       'Username':'administrator',
+                                              'Password':'Welcome789',
+                                              'Domain':'alab.int'
+                                    },
+                                    {  
+                                       'Username':'manrique',
+                                       'Password':'Welcome123',
+                                       'Domain':'alab.int'
+                                    }
+                                 ]
+                              },
+                              {  
+                                 'ServiceDesk':[
+                                    {  
+                                       'Username':'juarez',
+                                       'Password':'Welcome123',
+                                       'Domain':'alab.int'
+                                    }
+                                 ]
+                              }
+                           ]
+                        }");
+        }
+
         [Test]
         public void TestSchema()
         {
-            JSchema schema = JSchema.Parse(@"{
-              'type': 'object',
-              'properties': {
-                'name': {'type':'string'},
-                'roles': {'type': 'array'}
-              }
-            }");
-
             JObject user = JObject.Parse(@"{
-              'name': 'Arnie Admin',
-              'roles': ['Developer', 'Administrator']
+              'Roles': 'Administrator',
+              'Username': 'manrique'
             }");
 
-            bool valid = user.IsValid(schema);
+            bool valid = user.IsValid(_schema);
 
             Assert.IsTrue(valid);
         }
@@ -37,13 +63,6 @@ namespace JsonSchemaValidator.Test
         {
             JSchemaGenerator generator = new JSchemaGenerator();
             JSchema schema = generator.Generate(typeof(Account));
-            // {
-            //   "type": "object",
-            //   "properties": {
-            //     "email": { "type": "string", "format": "email" }
-            //   },
-            //   "required": [ "email" ]
-            // }
 
             Assert.IsNotNull(schema);
         }
@@ -51,17 +70,13 @@ namespace JsonSchemaValidator.Test
         [Test]
         public void TestDeserializator()
         {
-            JSchema schema = JSchema.Parse(@"{
-                              'type': 'array',
-                              'item': {'type':'string'}
-                                }");
             JsonTextReader reader = new JsonTextReader(new StringReader(@"[
-                                  'Developer',
-                                  'Administrator'
+                                  'Administrator',
+                                  'ServiceDesk'
                                 ]"));
 
             JSchemaValidatingReader validatingReader = new JSchemaValidatingReader(reader);
-            validatingReader.Schema = schema;
+            validatingReader.Schema = _schema;
 
             JsonSerializer serializer = new JsonSerializer();
             List<string> roles = serializer.Deserialize<List<string>>(validatingReader);
@@ -71,8 +86,12 @@ namespace JsonSchemaValidator.Test
 
         private class Account
         {
-            [JsonProperty("email", Required = Required.Always)]
-            public string Email;
+            [JsonProperty("Username", Required = Required.Always)]
+            public string Username;
+            [JsonProperty("Domain", Required = Required.Always)]
+            public string Domain;
+            [JsonProperty("Password", Required = Required.Always)]
+            public string Password;
         }
     }
 }
