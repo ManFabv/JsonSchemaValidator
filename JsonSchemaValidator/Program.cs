@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace JsonSchemaValidator
+﻿namespace JsonSchemaValidator
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
+            System.Console.Write("Press a key to finish... ");
+            System.Console.ReadKey();
         }
     }
 }
