@@ -1,9 +1,7 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
 using NUnit.Framework;
-using System.Collections.Generic;
 using System.IO;
 
 namespace JsonSchemaValidator.Test
@@ -11,80 +9,32 @@ namespace JsonSchemaValidator.Test
     [TestFixture]
     class JSonSchemaValidatorTests
     {
-        private JSchema _schema;
+        private string jsonInput;
 
         [SetUp]
         public void SetUp()
         {
-            _schema = JSchema.Parse(@"{  
-                           'Roles':[  
-                              {
-                                        'Administrator':[
-                                           {  
-                                       'Username':'administrator',
-                                              'Password':'Welcome789',
-                                              'Domain':'alab.int'
-                                    },
-                                    {  
-                                       'Username':'manrique',
-                                       'Password':'Welcome123',
-                                       'Domain':'alab.int'
-                                    }
-                                 ]
-                              },
-                              {  
-                                 'ServiceDesk':[
-                                    {  
-                                       'Username':'juarez',
-                                       'Password':'Welcome123',
-                                       'Domain':'alab.int'
-                                    }
-                                 ]
-                              }
-                           ]
-                        }");
+            jsonInput = @"{ 'Domain':'alab.int', 'Username':'administrator', 'Password':'Welcome789' }";
         }
 
         [Test]
-        public void TestSchema()
+        public void ValidateAndCreateObjects()
         {
-            JObject user = JObject.Parse(@"{
-              'Roles': 'Administrator',
-              'Username': 'manrique'
-            }");
+            var schemaGenerator = new JSchemaGenerator();
+            var schema = schemaGenerator.Generate(typeof(Account));
 
-            bool valid = user.IsValid(_schema);
 
-            Assert.IsTrue(valid);
+            var textReader = new StringReader(jsonInput);
+            var jsonTextReader = new JsonTextReader(textReader);
+
+            var jSchemaValidatingReader = new JSchemaValidatingReader(jsonTextReader);
+            jSchemaValidatingReader.Schema = schema;
+
+            var jsonSerializer = new JsonSerializer();
+            var role = jsonSerializer.Deserialize<Account>(jSchemaValidatingReader);
         }
 
-        [Test]
-        public void TestGenerator()
-        {
-            JSchemaGenerator generator = new JSchemaGenerator();
-            JSchema schema = generator.Generate(typeof(Account));
-
-            Assert.IsNotNull(schema);
-        }
-
-        [Test]
-        public void TestDeserializator()
-        {
-            JsonTextReader reader = new JsonTextReader(new StringReader(@"[
-                                  'Administrator',
-                                  'ServiceDesk'
-                                ]"));
-
-            JSchemaValidatingReader validatingReader = new JSchemaValidatingReader(reader);
-            validatingReader.Schema = _schema;
-
-            JsonSerializer serializer = new JsonSerializer();
-            List<string> roles = serializer.Deserialize<List<string>>(validatingReader);
-
-            Assert.IsNotNull(roles);
-        }
-
-        private class Account
+        public class Account
         {
             [JsonProperty("Username", Required = Required.Always)]
             public string Username;
