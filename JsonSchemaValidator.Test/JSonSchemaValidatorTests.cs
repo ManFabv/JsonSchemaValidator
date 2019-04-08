@@ -2,7 +2,6 @@
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
 using NUnit.Framework;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -16,7 +15,35 @@ namespace JsonSchemaValidator.Test
         [SetUp]
         public void SetUp()
         {
-            jsonInput = @"{'Roles' : [{'Accounts' : [{ 'Domain':'alab.int', 'Username':'administrator', 'Password':'Welcome789' }, { 'Domain':'alab.int', 'Username':'manrique', 'Password':'Welcome123' }]}]}";
+            jsonInput = @"{
+                          'Roles': [
+                            {
+                              'Role': 'Administrator',
+                              'Accounts': [
+                                {
+                                  'Domain': 'alab.int',
+                                  'Username': 'administrator',
+                                  'Password': 'Welcome789'
+                                },
+                                {
+                                  'Domain': 'alab.int',
+                                  'Username': 'manrique',
+                                  'Password': 'Welcome123'
+                                }
+                              ]
+                            },
+                            {
+                              'Role': 'ServiceDesk',
+                              'Accounts': [
+                                {
+                                  'Domain': 'alab.int',
+                                  'Username': 'juarez',
+                                  'Password': 'Welcome123'
+                                }
+                              ]
+                            }
+                          ]
+                        }";
         }
 
         [Test]
@@ -43,6 +70,8 @@ namespace JsonSchemaValidator.Test
 
         public class Role
         {          
+            [JsonProperty("Role", Required = Required.Always)]
+            public string RoleName { get; set; }
             [JsonProperty("Accounts")]
             public List<Account> accounts = new List<Account>();
         }
