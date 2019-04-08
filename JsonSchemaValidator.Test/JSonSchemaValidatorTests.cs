@@ -16,14 +16,14 @@ namespace JsonSchemaValidator.Test
         [SetUp]
         public void SetUp()
         {
-            jsonInput = @"{'Role' : [{ 'Domain':'alab.int', 'Username':'administrator', 'Password':'Welcome789' }, { 'Domain':'alab.int', 'Username':'manrique', 'Password':'Welcome123' }]}";
+            jsonInput = @"{'Roles' : [{'Accounts' : [{ 'Domain':'alab.int', 'Username':'administrator', 'Password':'Welcome789' }, { 'Domain':'alab.int', 'Username':'manrique', 'Password':'Welcome123' }]}]}";
         }
 
         [Test]
         public void ValidateAndCreateObjects()
         {
             var schemaGenerator = new JSchemaGenerator();
-            var schema = schemaGenerator.Generate(typeof(Role));
+            var schema = schemaGenerator.Generate(typeof(Roles));
 
             var textReader = new StringReader(jsonInput);
             var jsonTextReader = new JsonTextReader(textReader);
@@ -32,13 +32,19 @@ namespace JsonSchemaValidator.Test
             jSchemaValidatingReader.Schema = schema;
 
             var jsonSerializer = new JsonSerializer();
-            var role = jsonSerializer.Deserialize<Role>(jSchemaValidatingReader);
+            var role = jsonSerializer.Deserialize<Roles>(jSchemaValidatingReader);
+        }
+
+        public class Roles
+        {
+            [JsonProperty("Roles")]
+            public List<Role> roles = new List<Role>();
         }
 
         public class Role
         {          
-            [JsonProperty("Role")]
-            public List<Account> roles;
+            [JsonProperty("Accounts")]
+            public List<Account> accounts = new List<Account>();
         }
 
         public class Account
