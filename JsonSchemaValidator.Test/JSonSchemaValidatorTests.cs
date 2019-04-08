@@ -2,6 +2,8 @@
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
 using NUnit.Framework;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 namespace JsonSchemaValidator.Test
@@ -14,15 +16,14 @@ namespace JsonSchemaValidator.Test
         [SetUp]
         public void SetUp()
         {
-            jsonInput = @"{ 'Domain':'alab.int', 'Username':'administrator', 'Password':'Welcome789' }";
+            jsonInput = @"{'Role' : [{ 'Domain':'alab.int', 'Username':'administrator', 'Password':'Welcome789' }, { 'Domain':'alab.int', 'Username':'manrique', 'Password':'Welcome123' }]}";
         }
 
         [Test]
         public void ValidateAndCreateObjects()
         {
             var schemaGenerator = new JSchemaGenerator();
-            var schema = schemaGenerator.Generate(typeof(Account));
-
+            var schema = schemaGenerator.Generate(typeof(Role));
 
             var textReader = new StringReader(jsonInput);
             var jsonTextReader = new JsonTextReader(textReader);
@@ -31,7 +32,13 @@ namespace JsonSchemaValidator.Test
             jSchemaValidatingReader.Schema = schema;
 
             var jsonSerializer = new JsonSerializer();
-            var role = jsonSerializer.Deserialize<Account>(jSchemaValidatingReader);
+            var role = jsonSerializer.Deserialize<Role>(jSchemaValidatingReader);
+        }
+
+        public class Role
+        {          
+            [JsonProperty("Role")]
+            public List<Account> roles;
         }
 
         public class Account
